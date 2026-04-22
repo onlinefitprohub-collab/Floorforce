@@ -11,7 +11,7 @@
       + '#hp-support-trigger {'
       + '  position:fixed;'
       + '  top:9px;'
-      + '  right:340px;'   /* ← adjust this value if position is off */
+      + '  right:95px;'
       + '  width:40px;'
       + '  height:40px;'
       + '  border-radius:50%;'
@@ -63,7 +63,7 @@
       + '}'
       + '.hp-avatar{'
       + '  width:44px;height:44px;'
-      + '  background:linear-gradient(135deg,#e8a04a,#c4843a);'
+      + '  background:#202b31;'
       + '  border-radius:12px;'
       + '  display:flex;align-items:center;justify-content:center;'
       + '  font-weight:800;font-size:15px;'
@@ -150,19 +150,19 @@
     document.body.appendChild(trigger);
 
     /* ── Try to auto-align with HighLevel's top-bar icons ──────────────── */
-    // Looks for the leftmost button/icon in the top 60px right-hand area
-    // and positions our trigger just to its left.
+    // Find the rightmost top-bar icon (skipping the far-edge avatar) and sit just left of it.
     setTimeout(function () {
       var all = document.querySelectorAll('button, a, [role="button"]');
       var candidates = [];
       for (var i = 0; i < all.length; i++) {
         var r = all[i].getBoundingClientRect();
-        if (r.top < 60 && r.top >= 0 && r.right > window.innerWidth * 0.55 && all[i] !== trigger) {
+        if (r.top < 60 && r.top >= 0 && r.right > window.innerWidth * 0.55
+            && r.right < window.innerWidth - 30 && all[i] !== trigger) {
           candidates.push({ el: all[i], rect: r });
         }
       }
       if (candidates.length) {
-        candidates.sort(function (a, b) { return a.rect.left - b.rect.left; });
+        candidates.sort(function (a, b) { return b.rect.right - a.rect.right; });
         var anchor = candidates[0].rect;
         trigger.style.top = (anchor.top + (anchor.height - 40) / 2) + 'px';
         trigger.style.right = (window.innerWidth - anchor.left + 6) + 'px';
@@ -184,7 +184,7 @@
       + '    <a href="https://start.healthpreneurgroup.com/sop" target="_blank" rel="noopener">'
       + '      <span class="hp-card-icon">&#x1F4DA;</span>'
       + '      <div class="hp-card-text">'
-      + '        <div class="hp-card-title">SOP &amp; Help Docs</div>'
+      + '        <div class="hp-card-title">PCP Help Guides</div>'
       + '        <div class="hp-card-desc">Browse our standard operating procedures</div>'
       + '      </div>'
       + '      <span class="hp-card-arrow">&#x203A;</span>'
@@ -194,7 +194,7 @@
       + '    <div class="hp-ticket-icon-wrap">&#x1F4AC;</div>'
       + '    <div class="hp-ticket-text">'
       + '      <strong>Submit a Tech Ticket</strong>'
-      + '      <span><span class="hp-online-dot"></span>We are online! How can we help you?</span>'
+      + '      <span><span class="hp-online-dot"></span>Get Dedicated Expert Support</span>'
       + '    </div>'
       + '  </a>'
       + '</div>'
