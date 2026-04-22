@@ -144,10 +144,36 @@
     trigger.id = 'hp-support-trigger';
     trigger.title = 'Support';
     var img = document.createElement('img');
-    img.src = GIF_URL;
     img.alt = 'Support';
     trigger.appendChild(img);
     document.body.appendChild(trigger);
+
+    // Capture first frame as static default; swap to live GIF on hover.
+    // Falls back to always-animated if CDN blocks CORS.
+    var staticFrame = null;
+    var loader = new Image();
+    loader.crossOrigin = 'anonymous';
+    loader.onload = function () {
+      try {
+        var c = document.createElement('canvas');
+        c.width = loader.naturalWidth || 40;
+        c.height = loader.naturalHeight || 40;
+        c.getContext('2d').drawImage(loader, 0, 0);
+        staticFrame = c.toDataURL('image/png');
+        img.src = staticFrame;
+      } catch (e) {
+        img.src = GIF_URL; // CORS blocked – show GIF always
+      }
+    };
+    loader.onerror = function () { img.src = GIF_URL; };
+    loader.src = GIF_URL;
+
+    trigger.addEventListener('mouseenter', function () {
+      if (staticFrame) img.src = GIF_URL;
+    });
+    trigger.addEventListener('mouseleave', function () {
+      if (staticFrame) img.src = staticFrame;
+    });
 
     /* ── Try to auto-align with HighLevel's top-bar icons ──────────────── */
     // Find the rightmost top-bar icon (skipping the far-edge avatar) and sit just left of it.
