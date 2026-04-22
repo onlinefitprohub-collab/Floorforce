@@ -56,8 +56,8 @@
       + '}'
       + '.hp-panel-header{'
       + '  background:#1a1a2e;'
-      + '  padding:24px 20px 30px;'
-      + '  color:white;'
+      + '  padding:24px 20px;'
+      + '  color:#fff!important;'
       + '  position:relative;'
       + '  flex-shrink:0;'
       + '}'
@@ -67,36 +67,20 @@
       + '  border-radius:12px;'
       + '  display:flex;align-items:center;justify-content:center;'
       + '  font-weight:800;font-size:15px;'
-      + '  margin-bottom:12px;color:white;letter-spacing:.5px;'
+      + '  margin-bottom:12px;color:#fff!important;letter-spacing:.5px;'
       + '}'
       + '.hp-panel-header h2{'
-      + '  margin:0;font-size:22px;font-weight:700;line-height:1.35;color:white;'
+      + '  margin:0;font-size:22px;font-weight:700;line-height:1.35;color:#fff!important;'
       + '}'
       + '.hp-close-x{'
       + '  position:absolute;top:14px;right:14px;'
       + '  width:30px;height:30px;'
       + '  background:rgba(255,255,255,.12);'
-      + '  border:none;color:white;border-radius:50%;cursor:pointer;'
+      + '  border:none;color:#fff!important;border-radius:50%;cursor:pointer;'
       + '  font-size:14px;display:flex;align-items:center;justify-content:center;'
       + '  transition:background .15s;font-family:inherit;'
       + '}'
       + '.hp-close-x:hover{background:rgba(255,255,255,.22);}'
-      + '.hp-search-wrap{'
-      + '  padding:0 14px;margin-top:-17px;'
-      + '  position:relative;z-index:1;flex-shrink:0;'
-      + '}'
-      + '.hp-search-wrap input{'
-      + '  width:100%;padding:13px 40px 13px 15px;'
-      + '  border-radius:12px;border:none;background:white;'
-      + '  font-size:14px;font-family:inherit;outline:none;'
-      + '  box-sizing:border-box;box-shadow:0 2px 12px rgba(0,0,0,.1);color:#333;'
-      + '}'
-      + '.hp-search-wrap input::placeholder{color:#aaa;}'
-      + '.hp-search-icon-btn{'
-      + '  position:absolute;right:26px;top:50%;transform:translateY(-50%);'
-      + '  background:none;border:none;cursor:pointer;color:#aaa;'
-      + '  font-size:15px;padding:0;line-height:1;'
-      + '}'
       + '.hp-body{'
       + '  flex:1;overflow-y:auto;padding:14px;'
       + '  display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;'
@@ -194,10 +178,6 @@
       + '  <button class="hp-close-x" id="hp-close-btn">&#x2715;</button>'
       + '  <h2>Hi there &#x1F44B;<br>How can we help?</h2>'
       + '</div>'
-      + '<div class="hp-search-wrap">'
-      + '  <input type="text" id="hp-search-input" placeholder="Search for Help" />'
-      + '  <button class="hp-search-icon-btn" id="hp-search-btn">&#x1F50D;</button>'
-      + '</div>'
       + '<div class="hp-body">'
       + '  <p class="hp-section-label">Resources</p>'
       + '  <div class="hp-card">'
@@ -256,15 +236,6 @@
 
     document.getElementById('hp-close-btn').addEventListener('click', function () {
       panel.classList.remove('hp-open');
-    });
-
-    function doSearch() {
-      var q = document.getElementById('hp-search-input').value.trim();
-      window.open('https://start.healthpreneurgroup.com/sop' + (q ? '?s=' + encodeURIComponent(q) : ''), '_blank');
-    }
-    document.getElementById('hp-search-btn').addEventListener('click', doSearch);
-    document.getElementById('hp-search-input').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') doSearch();
     });
 
     document.addEventListener('click', function (e) {
