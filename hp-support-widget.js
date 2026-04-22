@@ -9,9 +9,6 @@
     /* ── STYLES ────────────────────────────────────────────────────────── */
     var css = ''
       + '#hp-support-trigger {'
-      + '  position:fixed;'
-      + '  top:9px;'
-      + '  right:95px;'
       + '  width:40px;'
       + '  height:40px;'
       + '  border-radius:50%;'
@@ -23,6 +20,9 @@
       + '  z-index:2147483647;'
       + '  transition:transform .2s ease;'
       + '  user-select:none;'
+      + '  flex-shrink:0;'
+      + '  align-self:center;'
+      + '  margin:0 4px;'
       + '}'
       + '#hp-support-trigger:hover{transform:scale(1.12);}'
       + '#hp-support-trigger img{'
@@ -146,10 +146,11 @@
     var img = document.createElement('img');
     img.alt = 'Support';
     trigger.appendChild(img);
+    // Start hidden; shown once injected or fallback fires
+    trigger.style.display = 'none';
     document.body.appendChild(trigger);
 
     // Capture first frame as static default; swap to live GIF on hover.
-    // Falls back to always-animated if CDN blocks CORS.
     var staticFrame = null;
     var loader = new Image();
     loader.crossOrigin = 'anonymous';
@@ -162,7 +163,7 @@
         staticFrame = c.toDataURL('image/png');
         img.src = staticFrame;
       } catch (e) {
-        img.src = GIF_URL; // CORS blocked – show GIF always
+        img.src = GIF_URL;
       }
     };
     loader.onerror = function () { img.src = GIF_URL; };
@@ -175,25 +176,80 @@
       if (staticFrame) img.src = staticFrame;
     });
 
-    /* ── Try to auto-align with HighLevel's top-bar icons ──────────────── */
-    // Find the rightmost top-bar icon (skipping the far-edge avatar) and sit just left of it.
-    setTimeout(function () {
-      var all = document.querySelectorAll('button, a, [role="button"]');
-      var candidates = [];
-      for (var i = 0; i < all.length; i++) {
-        var r = all[i].getBoundingClientRect();
-        if (r.top < 60 && r.top >= 0 && r.right > window.innerWidth * 0.55
-            && r.right < window.innerWidth - 30 && all[i] !== trigger) {
-          candidates.push({ el: all[i], rect: r });
+    /* ── ADAPTIVE INJECTION ─────────────────────────────────────────────
+       Finds the navbar's right-side flex container by scanning for the
+       smallest element in the top bar (right half) that has 3+ icon-sized
+       children. Inserts our button as a flex sibling — no fixed positioning
+       needed, so it naturally adapts as other widgets load/unload.
+    ────────────────────────────────────────────────────────────────────── */
+    function findNavContainer() {
+      var allEls = document.querySelectorAll('*');
+      var best = null;
+      var bestWidth = Infinity;
+
+      for (var i = 0; i < allEls.length; i++) {
+        var el = allEls[i];
+        if (el === trigger || el.contains(trigger)) continue;
+
+        var rect = el.getBoundingClientRect();
+        // Must be in top bar height range and on the right side
+        if (rect.height < 10 || rect.height > 80) continue;
+        if (rect.top < 0 || rect.top > 40) continue;
+        if (rect.right < window.innerWidth * 0.5) continue;
+
+        // Count icon-sized direct children
+        var kids = el.children;
+        var iconCount = 0;
+        for (var j = 0; j < kids.length; j++) {
+          var kr = kids[j].getBoundingClientRect();
+          if (kr.width >= 20 && kr.width <= 160 && kr.height >= 20 && kr.height <= 60) {
+            iconCount++;
+          }
+        }
+
+        // Pick the smallest container that holds 3+ icons
+        if (iconCount >= 3 && rect.width < bestWidth) {
+          best = el;
+          bestWidth = rect.width;
         }
       }
-      if (candidates.length) {
-        candidates.sort(function (a, b) { return b.rect.right - a.rect.right; });
-        var anchor = candidates[0].rect;
-        trigger.style.top = (anchor.top + (anchor.height - 40) / 2) + 'px';
-        trigger.style.right = (window.innerWidth - anchor.left + 6) + 'px';
-      }
-    }, 1500);
+      return best;
+    }
+
+    function injectAdaptive() {
+      var container = findNavContainer();
+      if (!container) return false;
+
+      // Move trigger out of body and into the nav flex container
+      document.body.removeChild(trigger);
+      container.insertBefore(trigger, container.firstChild);
+
+      // Let the flex container handle positioning — no fixed needed
+      trigger.style.position = 'static';
+      trigger.style.top = 'auto';
+      trigger.style.right = 'auto';
+      trigger.style.display = 'inline-flex';
+      return true;
+    }
+
+    // Try immediately, then watch for HL's React/Vue to finish rendering
+    if (!injectAdaptive()) {
+      var obs = new MutationObserver(function () {
+        if (injectAdaptive()) obs.disconnect();
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+
+      // Hard fallback after 6s: fixed position
+      setTimeout(function () {
+        obs.disconnect();
+        if (trigger.parentNode === document.body) {
+          trigger.style.position = 'fixed';
+          trigger.style.top = '9px';
+          trigger.style.right = '95px';
+          trigger.style.display = 'inline-flex';
+        }
+      }, 6000);
+    }
 
     /* ── PANEL ─────────────────────────────────────────────────────────── */
     var panel = document.createElement('div');
