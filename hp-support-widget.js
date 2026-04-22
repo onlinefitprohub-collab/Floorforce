@@ -9,9 +9,9 @@
       position: fixed;
       bottom: 28px;
       right: 28px;
-      width: 58px;
-      height: 58px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      width: 64px;
+      height: 64px;
+      background: none;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -20,13 +20,18 @@
       z-index: 2147483647;
       box-shadow: 0 4px 20px rgba(0,0,0,0.35);
       border: none;
-      color: white;
-      font-weight: 800;
-      font-size: 15px;
-      font-family: 'Inter', -apple-system, sans-serif;
-      letter-spacing: 0.5px;
+      padding: 0;
+      overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       user-select: none;
+    }
+    #hp-support-trigger img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+      pointer-events: none;
     }
     #hp-support-trigger:hover {
       transform: scale(1.08);
@@ -340,8 +345,8 @@
 
   const trigger = document.createElement('button');
   trigger.id = 'hp-support-trigger';
-  trigger.textContent = 'HP';
   trigger.title = 'Support';
+  trigger.innerHTML = '<img src="https://assets.cdn.filesafe.space/fjZxRMubk5kWXBOExKNb/media/69e8b483717d5dd4e1026e5a.gif" alt="Support" />';
   document.body.appendChild(trigger);
 
   const panel = document.createElement('div');
