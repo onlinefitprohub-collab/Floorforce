@@ -1,29 +1,35 @@
 (function () {
   'use strict';
 
-  if (document.getElementById('hp-support-trigger')) return; // prevent double-init
+  if (document.getElementById('hp-support-trigger')) return;
+
+  var GIF_URL = 'https://assets.cdn.filesafe.space/fjZxRMubk5kWXBOExKNb/media/69e8b483717d5dd4e1026e5a.gif';
 
   /* ── STYLES ─────────────────────────────────────────────────────────── */
-  const STYLES = `
+  var STYLES = `
     #hp-support-trigger {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      width: 64px;
-      height: 64px;
-      background: none;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 2147483647;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+      z-index: 99999;
       border: none;
       padding: 0;
       overflow: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: transparent;
+      transition: transform 0.2s ease;
       user-select: none;
+      flex-shrink: 0;
+      margin: 0 4px;
+      vertical-align: middle;
+    }
+    #hp-support-trigger.hp-trigger-fixed {
+      position: fixed;
+      top: 9px;
+      right: 210px;
     }
     #hp-support-trigger img {
       width: 100%;
@@ -33,15 +39,10 @@
       display: block;
       pointer-events: none;
     }
-    #hp-support-trigger:hover {
-      transform: scale(1.08);
-      box-shadow: 0 6px 28px rgba(0,0,0,0.45);
-    }
+    #hp-support-trigger:hover { transform: scale(1.12); }
 
     #hp-support-panel {
       position: fixed;
-      bottom: 100px;
-      right: 28px;
       width: 360px;
       height: 520px;
       background: #f2f2f7;
@@ -53,7 +54,7 @@
       overflow: hidden;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       opacity: 0;
-      transform: translateY(20px) scale(0.95);
+      transform: translateY(-10px) scale(0.95);
       pointer-events: none;
       transition: opacity 0.25s ease, transform 0.25s ease;
     }
@@ -110,9 +111,7 @@
       transition: background 0.15s;
       font-family: inherit;
     }
-    .hp-close-x:hover {
-      background: rgba(255,255,255,0.22);
-    }
+    .hp-close-x:hover { background: rgba(255,255,255,0.22); }
 
     /* ── SEARCH ── */
     .hp-search-wrap {
@@ -168,8 +167,6 @@
       letter-spacing: 0.8px;
       padding: 4px 2px 0;
     }
-
-    /* ── LINK CARD ── */
     .hp-card {
       background: white;
       border-radius: 14px;
@@ -189,19 +186,9 @@
     .hp-card a:hover { background: #fafafa; }
     .hp-card-icon { font-size: 20px; flex-shrink: 0; }
     .hp-card-text { flex: 1; }
-    .hp-card-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #4a6cf7;
-    }
-    .hp-card-desc {
-      font-size: 12px;
-      color: #999;
-      margin-top: 2px;
-    }
+    .hp-card-title { font-size: 14px; font-weight: 600; color: #4a6cf7; }
+    .hp-card-desc { font-size: 12px; color: #999; margin-top: 2px; }
     .hp-card-arrow { color: #ccc; font-size: 20px; }
-
-    /* ── TICKET CARD ── */
     .hp-ticket-card {
       background: white;
       border-radius: 14px;
@@ -225,12 +212,7 @@
       font-size: 22px;
       flex-shrink: 0;
     }
-    .hp-ticket-text strong {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: #111;
-    }
+    .hp-ticket-text strong { display: block; font-size: 14px; font-weight: 600; color: #111; }
     .hp-ticket-text span {
       font-size: 12px;
       color: #4a6cf7;
@@ -247,8 +229,6 @@
       border-radius: 50%;
       flex-shrink: 0;
     }
-
-    /* ── FOOTER NAV ── */
     .hp-footer-nav {
       display: flex;
       background: white;
@@ -275,21 +255,18 @@
   `;
 
   /* ── HTML ────────────────────────────────────────────────────────────── */
-  const PANEL_HTML = `
+  var PANEL_HTML = `
     <div class="hp-panel-header">
       <div class="hp-avatar">HP</div>
       <button class="hp-close-x" id="hp-close-btn" aria-label="Close">&#x2715;</button>
       <h2>Hi there &#x1F44B;<br>How can we help?</h2>
     </div>
-
     <div class="hp-search-wrap">
       <input type="text" id="hp-search-input" placeholder="Search for Help" />
       <button class="hp-search-icon-btn" id="hp-search-btn" aria-label="Search">&#x1F50D;</button>
     </div>
-
     <div class="hp-body">
       <p class="hp-section-label">Resources</p>
-
       <div class="hp-card">
         <a href="https://start.healthpreneurgroup.com/sop" target="_blank" rel="noopener">
           <span class="hp-card-icon">&#x1F4DA;</span>
@@ -300,10 +277,7 @@
           <span class="hp-card-arrow">&#x203A;</span>
         </a>
       </div>
-
-      <a class="hp-ticket-card"
-         href="https://hbasupport.hipporello.net/desk/form/d272f9daf0f443fb92e6423bc9671f22"
-         target="_blank" rel="noopener">
+      <a class="hp-ticket-card" href="https://hbasupport.hipporello.net/desk/form/d272f9daf0f443fb92e6423bc9671f22" target="_blank" rel="noopener">
         <div class="hp-ticket-icon-wrap">&#x1F4AC;</div>
         <div class="hp-ticket-text">
           <strong>Submit a Tech Ticket</strong>
@@ -311,16 +285,15 @@
         </div>
       </a>
     </div>
-
     <nav class="hp-footer-nav">
-      <a href="#" class="hp-active" id="hp-home-tab" aria-label="Home">
+      <a href="#" class="hp-active" aria-label="Home">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
         Home
       </a>
-      <a href="https://start.healthpreneurgroup.com/sop" target="_blank" rel="noopener" aria-label="Help Docs">
+      <a href="https://start.healthpreneurgroup.com/sop" target="_blank" rel="noopener" aria-label="Help">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>
           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
@@ -328,8 +301,7 @@
         </svg>
         Help
       </a>
-      <a href="https://hbasupport.hipporello.net/desk/form/d272f9daf0f443fb92e6423bc9671f22"
-         target="_blank" rel="noopener" aria-label="Submit Ticket">
+      <a href="https://hbasupport.hipporello.net/desk/form/d272f9daf0f443fb92e6423bc9671f22" target="_blank" rel="noopener" aria-label="Tickets">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
@@ -338,25 +310,83 @@
     </nav>
   `;
 
-  /* ── INJECT ──────────────────────────────────────────────────────────── */
-  const styleEl = document.createElement('style');
+  /* ── INJECT STYLES & PANEL ───────────────────────────────────────────── */
+  var styleEl = document.createElement('style');
   styleEl.textContent = STYLES;
   document.head.appendChild(styleEl);
 
-  const trigger = document.createElement('button');
+  var trigger = document.createElement('button');
   trigger.id = 'hp-support-trigger';
   trigger.title = 'Support';
-  trigger.innerHTML = '<img src="https://assets.cdn.filesafe.space/fjZxRMubk5kWXBOExKNb/media/69e8b483717d5dd4e1026e5a.gif" alt="Support" />';
-  document.body.appendChild(trigger);
+  trigger.innerHTML = '<img src="' + GIF_URL + '" alt="Support" />';
 
-  const panel = document.createElement('div');
+  var panel = document.createElement('div');
   panel.id = 'hp-support-panel';
   panel.innerHTML = PANEL_HTML;
   document.body.appendChild(panel);
 
+  /* ── NAVBAR INJECTION ────────────────────────────────────────────────── */
+  // Tries to find HighLevel's top-right icon row and insert before the first icon
+  function tryInjectIntoNavbar() {
+    var selectors = [
+      '.hl_header--actions',
+      '.hl_top-bar--right',
+      '[class*="topbar"] [class*="right"]',
+      '[class*="top-bar"] [class*="right"]',
+      '[class*="header"] [class*="actions"]',
+      '[class*="header"] [class*="right"]',
+      '[class*="navbar"] [class*="right"]',
+      'header [class*="right"]',
+      'header [class*="action"]'
+    ];
+
+    for (var i = 0; i < selectors.length; i++) {
+      var container = document.querySelector(selectors[i]);
+      if (container && container !== document.body) {
+        container.insertBefore(trigger, container.firstChild);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Observe DOM until navbar appears, then inject
+  if (!tryInjectIntoNavbar()) {
+    var observer = new MutationObserver(function () {
+      if (tryInjectIntoNavbar()) {
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Fallback: fixed top-right after 4 seconds if navbar never found
+    setTimeout(function () {
+      observer.disconnect();
+      if (!trigger.parentNode) {
+        trigger.classList.add('hp-trigger-fixed');
+        document.body.appendChild(trigger);
+      }
+    }, 4000);
+  }
+
+  /* ── PANEL POSITIONING (opens downward from trigger) ────────────────── */
+  function positionPanel() {
+    var rect = trigger.getBoundingClientRect();
+    var panelWidth = 360;
+    var rightEdge = window.innerWidth - rect.right;
+    // Keep panel within viewport
+    if (rightEdge < 0) rightEdge = 8;
+    if (rightEdge + panelWidth > window.innerWidth) rightEdge = window.innerWidth - panelWidth - 8;
+    panel.style.top = (rect.bottom + 8) + 'px';
+    panel.style.right = rightEdge + 'px';
+    panel.style.bottom = 'auto';
+    panel.style.left = 'auto';
+  }
+
   /* ── BEHAVIOUR ───────────────────────────────────────────────────────── */
   trigger.addEventListener('click', function (e) {
     e.stopPropagation();
+    positionPanel();
     panel.classList.toggle('hp-open');
   });
 
@@ -364,7 +394,6 @@
     panel.classList.remove('hp-open');
   });
 
-  // Search → open SOP page
   function doSearch() {
     var q = document.getElementById('hp-search-input').value.trim();
     window.open('https://start.healthpreneurgroup.com/sop' + (q ? '?s=' + encodeURIComponent(q) : ''), '_blank');
@@ -374,14 +403,12 @@
     if (e.key === 'Enter') doSearch();
   });
 
-  // Close on outside click
   document.addEventListener('click', function (e) {
     if (!panel.contains(e.target) && e.target !== trigger) {
       panel.classList.remove('hp-open');
     }
   });
 
-  // Prevent panel clicks from bubbling to document close handler
   panel.addEventListener('click', function (e) { e.stopPropagation(); });
 
 })();
