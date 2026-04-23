@@ -220,7 +220,7 @@
       if (!container) return false;
 
       document.body.removeChild(trigger);
-      container.insertBefore(trigger, container.firstChild);
+      container.insertBefore(trigger, container.lastChild);
 
       trigger.style.position = 'static';
       trigger.style.top = 'auto';
