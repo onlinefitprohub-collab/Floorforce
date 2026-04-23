@@ -194,6 +194,8 @@
         var rect = el.getBoundingClientRect();
         if (rect.height < 10 || rect.height > 80) continue;
         if (rect.top < 0 || rect.top > 40) continue;
+        // Both edges must be in the right 55% of the viewport — rules out full-width bars
+        if (rect.left < window.innerWidth * 0.45) continue;
         if (rect.right < window.innerWidth * 0.5) continue;
 
         var kids = el.children;
