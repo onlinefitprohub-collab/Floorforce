@@ -220,7 +220,18 @@
       if (!container) return false;
 
       document.body.removeChild(trigger);
-      container.insertBefore(trigger, container.firstChild);
+
+      // Insert before the right-side cluster in its parent nav bar.
+      // This lands us in the gap between the left icons (HLProTools etc.)
+      // and the right cluster (Ask AI, notifications, avatar).
+      var parent = container.parentNode;
+      var parentRect = parent ? parent.getBoundingClientRect() : null;
+      if (parent && parent !== document.body &&
+          parentRect && parentRect.top >= 0 && parentRect.top < 60) {
+        parent.insertBefore(trigger, container);
+      } else {
+        container.insertBefore(trigger, container.firstChild);
+      }
 
       trigger.style.position = 'static';
       trigger.style.top = 'auto';
