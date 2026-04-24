@@ -241,7 +241,9 @@
 
       if (askAIEl && askAIEl.parentNode) {
         document.body.removeChild(trigger);
-        askAIEl.parentNode.insertBefore(trigger, askAIEl);
+        // Insert before the phone icon (Ask AI's previous sibling) to sit left of it
+        var phoneEl = askAIEl.previousElementSibling;
+        askAIEl.parentNode.insertBefore(trigger, phoneEl || askAIEl);
         trigger.style.position = 'static';
         trigger.style.top = 'auto';
         trigger.style.right = 'auto';
