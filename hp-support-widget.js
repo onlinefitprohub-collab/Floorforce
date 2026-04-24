@@ -224,23 +224,36 @@
     }
 
     function injectAdaptive() {
-      var container = findNavContainer();
-      if (!container) return false;
-
-      document.body.removeChild(trigger);
-
-      // Insert before the right-side cluster in its parent nav bar.
-      // This lands us in the gap between the left icons (HLProTools etc.)
-      // and the right cluster (Ask AI, notifications, avatar).
-      var parent = container.parentNode;
-      var parentRect = parent ? parent.getBoundingClientRect() : null;
-      if (parent && parent !== document.body &&
-          parentRect && parentRect.top >= 0 && parentRect.top < 60) {
-        parent.insertBefore(trigger, container);
-      } else {
-        container.insertBefore(trigger, container.firstChild);
+      // Primary strategy: find the "Ask AI" button by text and insert just before it.
+      // This is a reliable landmark that doesn't depend on container structure guessing.
+      var allEls = document.querySelectorAll('*');
+      var askAIEl = null;
+      for (var i = 0; i < allEls.length; i++) {
+        var el = allEls[i];
+        if (el === trigger || el.contains(trigger)) continue;
+        var rect = el.getBoundingClientRect();
+        if (rect.top < 0 || rect.top > 55) continue;
+        if (rect.width < 50 || rect.width > 220) continue;
+        if (rect.height < 20 || rect.height > 55) continue;
+        var txt = (el.innerText || '').replace(/\s+/g, ' ').trim();
+        if (txt.indexOf('Ask AI') !== -1) { askAIEl = el; break; }
       }
 
+      if (askAIEl && askAIEl.parentNode) {
+        document.body.removeChild(trigger);
+        askAIEl.parentNode.insertBefore(trigger, askAIEl);
+        trigger.style.position = 'static';
+        trigger.style.top = 'auto';
+        trigger.style.right = 'auto';
+        trigger.style.display = 'inline-flex';
+        return true;
+      }
+
+      // Fallback: container heuristic
+      var container = findNavContainer();
+      if (!container) return false;
+      document.body.removeChild(trigger);
+      container.insertBefore(trigger, container.firstChild);
       trigger.style.position = 'static';
       trigger.style.top = 'auto';
       trigger.style.right = 'auto';
