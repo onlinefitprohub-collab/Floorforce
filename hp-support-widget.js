@@ -364,4 +364,16 @@
     init();
   }
 
+  /* ── SPA NAVIGATION (HL uses pushState routing) ─────────────────────────
+     When the user navigates between pages the nav bar DOM is torn down and
+     rebuilt. Re-run init() after each route change so the widget re-injects.
+     The guard at the top of init() prevents double-initialisation.
+  ────────────────────────────────────────────────────────────────────────── */
+  var _origPushState = history.pushState;
+  history.pushState = function () {
+    _origPushState.apply(this, arguments);
+    setTimeout(init, 500);
+  };
+  window.addEventListener('popstate', function () { setTimeout(init, 500); });
+
 })();
