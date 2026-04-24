@@ -4,6 +4,14 @@
   function init() {
     if (document.getElementById('hp-support-trigger')) return;
 
+    // Don't run on builder/tool pages — their dynamic DOMs cause the
+    // MutationObserver + querySelectorAll('*') scan to crash the page.
+    var path = window.location.pathname;
+    var skipPaths = ['/workflow/', '/email-builder/', '/funnel-builder/', '/page-builder/', '/form-builder/', '/survey-builder/'];
+    for (var s = 0; s < skipPaths.length; s++) {
+      if (path.indexOf(skipPaths[s]) !== -1) return;
+    }
+
     var GIF_URL = 'https://assets.cdn.filesafe.space/fjZxRMubk5kWXBOExKNb/media/69e8b483717d5dd4e1026e5a.gif';
 
     /* ── STYLES ────────────────────────────────────────────────────────── */
@@ -241,8 +249,12 @@
     }
 
     if (!injectAdaptive()) {
+      var obsTimer = null;
       var obs = new MutationObserver(function () {
-        if (injectAdaptive()) obs.disconnect();
+        clearTimeout(obsTimer);
+        obsTimer = setTimeout(function () {
+          if (injectAdaptive()) obs.disconnect();
+        }, 150);
       });
       obs.observe(document.body, { childList: true, subtree: true });
 
