@@ -4,6 +4,12 @@
   function init() {
     if (document.getElementById('hp-support-trigger')) return;
 
+    // After SPA navigation the nav bar is rebuilt, destroying the trigger with it.
+    // The panel stays in body since it's a direct child. Remove it so the fresh
+    // init doesn't end up with two panels and a broken close-button listener.
+    var stalePanel = document.getElementById('hp-support-panel');
+    if (stalePanel && stalePanel.parentNode) stalePanel.parentNode.removeChild(stalePanel);
+
     // Don't run on builder/tool pages — their dynamic DOMs cause the
     // MutationObserver + querySelectorAll('*') scan to crash the page.
     var path = window.location.pathname;
@@ -144,9 +150,12 @@
       + '#hp-support-panel .hp-footer-nav a.hp-active,#hp-support-panel .hp-footer-nav a:hover{color:#1a1a2e;}'
       + '#hp-support-panel .hp-footer-nav svg{width:20px;height:20px;}';
 
-    var styleEl = document.createElement('style');
-    styleEl.textContent = css;
-    document.head.appendChild(styleEl);
+    if (!document.getElementById('hp-support-styles')) {
+      var styleEl = document.createElement('style');
+      styleEl.id = 'hp-support-styles';
+      styleEl.textContent = css;
+      document.head.appendChild(styleEl);
+    }
 
     /* ── TRIGGER BUTTON ────────────────────────────────────────────────── */
     var trigger = document.createElement('button');
@@ -240,7 +249,7 @@
       }
 
       if (askAIEl && askAIEl.parentNode) {
-        document.body.removeChild(trigger);
+        if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
         // Insert before the phone icon (Ask AI's previous sibling) to sit left of it
         var phoneEl = askAIEl.previousElementSibling;
         askAIEl.parentNode.insertBefore(trigger, phoneEl || askAIEl);
@@ -254,7 +263,7 @@
       // Fallback: container heuristic
       var container = findNavContainer();
       if (!container) return false;
-      document.body.removeChild(trigger);
+      if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
       container.insertBefore(trigger, container.firstChild);
       trigger.style.position = 'static';
       trigger.style.top = 'auto';
