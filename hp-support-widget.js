@@ -194,49 +194,13 @@
     });
 
     /* ── ADAPTIVE INJECTION ─────────────────────────────────────────────
-       Finds the navbar's right-side flex container by scanning for the
-       smallest element in the top bar (right half) that has 3+ icon-sized
-       children. Inserts our button as a flex sibling so it naturally adapts
-       as other widgets load/unload.
+       Anchors to the "Ask AI" button — a reliable landmark present only on
+       main HL nav pages. If it isn't found the widget stays hidden; we never
+       guess at unknown containers (editor pages, product pages, etc. all have
+       different top-bars that would be wrongly matched by a heuristic).
     ────────────────────────────────────────────────────────────────────── */
-    function findNavContainer() {
-      var allEls = document.querySelectorAll('*');
-      var best = null;
-      var bestWidth = Infinity;
-
-      for (var i = 0; i < allEls.length; i++) {
-        var el = allEls[i];
-        if (el === trigger || el.contains(trigger)) continue;
-
-        var rect = el.getBoundingClientRect();
-        if (rect.height < 10 || rect.height > 80) continue;
-        if (rect.top < 0 || rect.top > 40) continue;
-        // Both edges must be in the right 55% of the viewport — rules out full-width bars
-        if (rect.left < window.innerWidth * 0.45) continue;
-        if (rect.right < window.innerWidth * 0.5) continue;
-
-        var kids = el.children;
-        var iconCount = 0;
-        for (var j = 0; j < kids.length; j++) {
-          var kr = kids[j].getBoundingClientRect();
-          if (kr.width >= 20 && kr.width <= 160 && kr.height >= 20 && kr.height <= 60) {
-            iconCount++;
-          }
-        }
-
-        if (iconCount >= 3 && rect.width < bestWidth) {
-          best = el;
-          bestWidth = rect.width;
-        }
-      }
-      return best;
-    }
-
     function injectAdaptive() {
-      // Primary strategy: find the "Ask AI" button by text and insert just before it.
-      // This is a reliable landmark that doesn't depend on container structure guessing.
       var allEls = document.querySelectorAll('*');
-      var askAIEl = null;
       for (var i = 0; i < allEls.length; i++) {
         var el = allEls[i];
         if (el === trigger || el.contains(trigger)) continue;
@@ -245,31 +209,18 @@
         if (rect.width < 50 || rect.width > 220) continue;
         if (rect.height < 20 || rect.height > 55) continue;
         var txt = (el.innerText || '').replace(/\s+/g, ' ').trim();
-        if (txt.indexOf('Ask AI') !== -1) { askAIEl = el; break; }
+        if (txt.indexOf('Ask AI') !== -1) {
+          if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
+          var phoneEl = el.previousElementSibling;
+          el.parentNode.insertBefore(trigger, phoneEl || el);
+          trigger.style.position = 'static';
+          trigger.style.top = 'auto';
+          trigger.style.right = 'auto';
+          trigger.style.display = 'inline-flex';
+          return true;
+        }
       }
-
-      if (askAIEl && askAIEl.parentNode) {
-        if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
-        // Insert before the phone icon (Ask AI's previous sibling) to sit left of it
-        var phoneEl = askAIEl.previousElementSibling;
-        askAIEl.parentNode.insertBefore(trigger, phoneEl || askAIEl);
-        trigger.style.position = 'static';
-        trigger.style.top = 'auto';
-        trigger.style.right = 'auto';
-        trigger.style.display = 'inline-flex';
-        return true;
-      }
-
-      // Fallback: container heuristic
-      var container = findNavContainer();
-      if (!container) return false;
-      if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
-      container.insertBefore(trigger, container.firstChild);
-      trigger.style.position = 'static';
-      trigger.style.top = 'auto';
-      trigger.style.right = 'auto';
-      trigger.style.display = 'inline-flex';
-      return true;
+      return false;
     }
 
     if (!injectAdaptive()) {
@@ -282,15 +233,8 @@
       });
       obs.observe(document.body, { childList: true, subtree: true });
 
-      setTimeout(function () {
-        obs.disconnect();
-        if (trigger.parentNode === document.body) {
-          trigger.style.position = 'fixed';
-          trigger.style.top = '9px';
-          trigger.style.right = '95px';
-          trigger.style.display = 'inline-flex';
-        }
-      }, 6000);
+      // If Ask AI never appears this isn't a main-nav page — stay hidden.
+      setTimeout(function () { obs.disconnect(); }, 6000);
     }
 
     /* ── PANEL ─────────────────────────────────────────────────────────── */
