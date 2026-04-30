@@ -194,32 +194,58 @@
     });
 
     /* ── ADAPTIVE INJECTION ─────────────────────────────────────────────
-       Anchors to the "Ask AI" button — a reliable landmark present only on
-       main HL nav pages. If it isn't found the widget stays hidden; we never
-       guess at unknown containers (editor pages, product pages, etc. all have
-       different top-bars that would be wrongly matched by a heuristic).
+       Two anchors:
+       1. "Ask AI" text button  → main nav pages (insert before phone icon)
+       2. User avatar           → editor/config pages (insert before avatar)
+       Both are always present in their respective top bars and insert the
+       trigger as a proper flex sibling, so nothing overlaps.
     ────────────────────────────────────────────────────────────────────── */
     function injectAdaptive() {
       var allEls = document.querySelectorAll('*');
+      var askAIEl = null;
+      var avatarEl = null;
+      var bestAvatarRight = 0;
+
       for (var i = 0; i < allEls.length; i++) {
         var el = allEls[i];
         if (el === trigger || el.contains(trigger)) continue;
         var rect = el.getBoundingClientRect();
-        if (rect.top < 0 || rect.top > 55) continue;
-        if (rect.width < 50 || rect.width > 220) continue;
-        if (rect.height < 20 || rect.height > 55) continue;
-        var txt = (el.innerText || '').replace(/\s+/g, ' ').trim();
-        if (txt.indexOf('Ask AI') !== -1) {
-          if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
-          var phoneEl = el.previousElementSibling;
-          el.parentNode.insertBefore(trigger, phoneEl || el);
-          trigger.style.position = 'static';
-          trigger.style.top = 'auto';
-          trigger.style.right = 'auto';
-          trigger.style.display = 'inline-flex';
-          return true;
+        if (rect.top < 0 || rect.top > 60) continue;
+
+        // Primary anchor: Ask AI button
+        if (!askAIEl && rect.width >= 50 && rect.width <= 220 && rect.height >= 20 && rect.height <= 55) {
+          var txt = (el.innerText || '').replace(/\s+/g, ' ').trim();
+          if (txt.indexOf('Ask AI') !== -1) askAIEl = el;
+        }
+
+        // Fallback anchor: user avatar — rightmost small square element in top bar
+        if (rect.width >= 24 && rect.width <= 54 && rect.height >= 24 && rect.height <= 54) {
+          if (rect.right > window.innerWidth - 80 && rect.right > bestAvatarRight) {
+            avatarEl = el;
+            bestAvatarRight = rect.right;
+          }
         }
       }
+
+      if (askAIEl && askAIEl.parentNode) {
+        if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
+        var phoneEl = askAIEl.previousElementSibling;
+        askAIEl.parentNode.insertBefore(trigger, phoneEl || askAIEl);
+        trigger.style.position = 'static';
+        trigger.style.top = 'auto'; trigger.style.right = 'auto'; trigger.style.bottom = 'auto';
+        trigger.style.display = 'inline-flex';
+        return true;
+      }
+
+      if (avatarEl && avatarEl.parentNode) {
+        if (trigger.parentNode) trigger.parentNode.removeChild(trigger);
+        avatarEl.parentNode.insertBefore(trigger, avatarEl);
+        trigger.style.position = 'static';
+        trigger.style.top = 'auto'; trigger.style.right = 'auto'; trigger.style.bottom = 'auto';
+        trigger.style.display = 'inline-flex';
+        return true;
+      }
+
       return false;
     }
 
@@ -232,19 +258,7 @@
         }, 150);
       });
       obs.observe(document.body, { childList: true, subtree: true });
-
-      // If Ask AI never appears fall back to a fixed bottom-right position
-      // that doesn't conflict with any page-specific top-bar action buttons.
-      setTimeout(function () {
-        obs.disconnect();
-        if (trigger.style.display === 'none') {
-          trigger.style.position = 'fixed';
-          trigger.style.bottom = '20px';
-          trigger.style.right = '20px';
-          trigger.style.top = 'auto';
-          trigger.style.display = 'inline-flex';
-        }
-      }, 6000);
+      setTimeout(function () { obs.disconnect(); }, 6000);
     }
 
     /* ── PANEL ─────────────────────────────────────────────────────────── */
