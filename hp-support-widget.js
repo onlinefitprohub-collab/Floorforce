@@ -233,8 +233,18 @@
       });
       obs.observe(document.body, { childList: true, subtree: true });
 
-      // If Ask AI never appears this isn't a main-nav page — stay hidden.
-      setTimeout(function () { obs.disconnect(); }, 6000);
+      // If Ask AI never appears fall back to a fixed bottom-right position
+      // that doesn't conflict with any page-specific top-bar action buttons.
+      setTimeout(function () {
+        obs.disconnect();
+        if (trigger.style.display === 'none') {
+          trigger.style.position = 'fixed';
+          trigger.style.bottom = '20px';
+          trigger.style.right = '20px';
+          trigger.style.top = 'auto';
+          trigger.style.display = 'inline-flex';
+        }
+      }, 6000);
     }
 
     /* ── PANEL ─────────────────────────────────────────────────────────── */
