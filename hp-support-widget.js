@@ -11,14 +11,9 @@
     if (stalePanel && stalePanel.parentNode) stalePanel.parentNode.removeChild(stalePanel);
 
     var path = window.location.pathname;
-
-    // Builder pages rebuild their canvas constantly — MutationObserver + querySelectorAll('*')
-    // on every DOM change would be called hundreds of times/sec and crash the page.
-    // We still show the widget there; we just skip the observer and do one-shot injection.
-    var builderPaths = ['/workflow/', '/email-builder/', '/funnel-builder/', '/page-builder/', '/form-builder/', '/survey-builder/'];
-    var isBuilder = false;
-    for (var b = 0; b < builderPaths.length; b++) {
-      if (path.indexOf(builderPaths[b]) !== -1) { isBuilder = true; break; }
+    var skipPaths = ['/workflow/', '/email-builder/', '/funnel-builder/', '/page-builder/', '/form-builder/', '/survey-builder/'];
+    for (var s = 0; s < skipPaths.length; s++) {
+      if (path.indexOf(skipPaths[s]) !== -1) return;
     }
 
     var GIF_URL = 'https://assets.cdn.filesafe.space/fjZxRMubk5kWXBOExKNb/media/69e8b483717d5dd4e1026e5a.gif';
@@ -253,28 +248,15 @@
     }
 
     if (!injectAdaptive()) {
-      if (isBuilder) {
-        // Builder pages: one retry after 2s, then fixed position — no observer.
-        setTimeout(function () {
-          if (!injectAdaptive()) {
-            trigger.style.position = 'fixed';
-            trigger.style.top = '8px';
-            trigger.style.right = '8px';
-            trigger.style.bottom = 'auto';
-            trigger.style.display = 'inline-flex';
-          }
-        }, 2000);
-      } else {
-        var obsTimer = null;
-        var obs = new MutationObserver(function () {
-          clearTimeout(obsTimer);
-          obsTimer = setTimeout(function () {
-            if (injectAdaptive()) obs.disconnect();
-          }, 150);
-        });
-        obs.observe(document.body, { childList: true, subtree: true });
-        setTimeout(function () { obs.disconnect(); }, 6000);
-      }
+      var obsTimer = null;
+      var obs = new MutationObserver(function () {
+        clearTimeout(obsTimer);
+        obsTimer = setTimeout(function () {
+          if (injectAdaptive()) obs.disconnect();
+        }, 150);
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { obs.disconnect(); }, 6000);
     }
 
     /* ── PANEL ─────────────────────────────────────────────────────────── */
